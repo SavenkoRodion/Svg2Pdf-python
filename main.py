@@ -121,9 +121,17 @@ class svg2pdf():
 
         try:
             testLol = WebDriverWait(driver,10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "structFilter"))
+                EC.presence_of_element_located((By.LINK_TEXT, "TO DO"))
             )
-            print(testLol)
+            testLol.click()
+            testNext = WebDriverWait(driver,10).until(
+                EC.presence_of_element_located((By.ID, "indexform"))
+            )
+            testAnother = testNext.find_elements_by_tag_name("tr")
+            #testTrs = testAnother[0].find_elements_by_tag_name("tr")
+            for i in testAnother:
+                print(type(i.get_attribute('id')))
+            #print(anotherTest[0].getAttribute("id"))
         except:
             driver.close()
 
