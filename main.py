@@ -7,7 +7,15 @@ from tkinter import filedialog
 from zipfile import ZipFile
 import shutil
 
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import WebDriverException
 
+import time
 # Rozpakować można na różne sposoby, później zastanowie się jaki jest najlepszy
 
 # with zipfile.ZipFile(zipDirectory, 'r') as zip_ref:
@@ -30,6 +38,8 @@ class svg2pdf():
         self.mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
         self.mainBtn = Button(self.mainFrame, text="Konwertuj obrazki w PDF", command=self.main)
         self.mainBtn.pack()
+        self.testBtn = Button(self.mainFrame, text="Test", command=self.test_selenium)
+        self.testBtn.pack()
         self.mainBtn["state"] = "disabled"
         ZipBtn = Button(self.mainFrame, text="Gdzie masz zipy?", command=self.unpack)
         ZipBtn.pack()
@@ -82,7 +92,7 @@ class svg2pdf():
             os.remove(i)
 
         for index, svg_path in enumerate(path_list):
-            cairosvg.svg2pdf(url=svg_path, write_to='tmp/image' + str(index) + '.pdf',dpi=72)
+            cairosvg.svg2pdf(url=svg_path, write_to='tmp/image' + str(index) + '.pdf', dpi=72)
         pdf_list = glob.glob("tmp/*")
         merger = PdfFileMerger()
         procesy = []
@@ -98,6 +108,27 @@ class svg2pdf():
             merger.write(fout)
         for proces in procesy:
             proces.close()
+    def test_selenium(self):
+        print("start test")
+        PATH = "C:/Users/Saven/Desktop/chromedriver.exe"
+        driver = webdriver.Chrome(PATH)
+        driver.get("http://veraprinteu:81/admin/")
+        login = driver.find_element_by_id("signin_username")
+        login.send_keys("rodion.savenko@veraprint.pl")
+        password = driver.find_element_by_id("signin_password")
+        password.send_keys("Rodion123456")
+        password.send_keys(Keys.RETURN)
+
+        try:
+            testLol = WebDriverWait(driver,10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "structFilter"))
+            )
+            print(testLol)
+        except:
+            driver.close()
+
+        time.sleep(5)
+        driver.close()
 
 
 svg2pdf().gui()
