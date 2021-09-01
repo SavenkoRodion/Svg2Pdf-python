@@ -6,7 +6,7 @@ from PyPDF2 import PdfFileMerger
 from tkinter import filedialog
 from zipfile import ZipFile
 import shutil
-
+import urllib.request
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -47,14 +47,20 @@ class svg2pdf():
 
     def unpack(self):
         #self.removeOldFiles("svg/*")
+        zipDirectories = os.getcwd()+"\zip" #filedialog.askopenfiles()
+        tempZips = []
         shutil.rmtree("svg")
         os.mkdir("svg", mode=0o777)
-        zipDirectories = filedialog.askopenfiles()
-        for zipDirectory in zipDirectories:
-            zf = ZipFile(str(zipDirectory.name), 'r')
+
+        for root, dirs, files in os.walk(zipDirectories):
+            for file in files:
+                tempZips.append(os.path.join(root, file))
+
+        for zipDirectory in tempZips:
+            zf = ZipFile(str(zipDirectory), 'r')
             zf.extractall('svg/')
             zf.close()
-        self.mainBtn["state"] = "active"
+        self.main()
 
     def main(self):
         folder_list = glob.glob("svg/*")
@@ -109,9 +115,17 @@ class svg2pdf():
         for proces in procesy:
             proces.close()
     def test_selenium(self):
+        shutil.rmtree("zip")
+        os.mkdir("zip", mode=0o777)
+        testArr = []
         print("start test")
         PATH = "C:/Users/Saven/Desktop/chromedriver.exe"
-        driver = webdriver.Chrome(PATH)
+        PATH1 = os.getcwd()+"\zip"
+        chrome_options = webdriver.ChromeOptions()
+        prefs = {'download.default_directory': PATH1}
+        chrome_options.add_experimental_option('prefs', prefs)
+        driver = webdriver.Chrome(PATH, options=chrome_options)
+
         driver.get("http://veraprinteu:81/admin/")
         login = driver.find_element_by_id("signin_username")
         login.send_keys("rodion.savenko@veraprint.pl")
@@ -120,24 +134,44 @@ class svg2pdf():
         password.send_keys(Keys.RETURN)
 
         try:
-            testLol = WebDriverWait(driver,10).until(
+            testToDO = WebDriverWait(driver,10).until(
                 EC.presence_of_element_located((By.LINK_TEXT, "TO DO"))
             )
-            testLol.click()
+            print(testToDO.text)
+            testToDO.click()
+            time.sleep(3)
             testNext = WebDriverWait(driver,10).until(
                 EC.presence_of_element_located((By.ID, "indexform"))
             )
             testAnother = testNext.find_elements_by_tag_name("tr")
             #testTrs = testAnother[0].find_elements_by_tag_name("tr")
             for i in testAnother:
-                print(type(i.get_attribute('id')))
-            #print(anotherTest[0].getAttribute("id"))
+                testId = i.get_attribute('id')
+                if "zamowienie" in testId:
+                    testWynnik = testId.replace('zamowienie_','')
+                    print(testWynnik)
+                    #driver.execute_script("window.open('about:blank','secondtab');")
+                    #driver.switch_to.window("secondtab")
+                    testArr.append('http://veraprinteu:81/admin/index.php/zamowienia/download/id/'+testWynnik)
+                    #time.sleep(3)
+                    # with urllib.request.urlopen('http://veraprinteu:81/admin/index.php/zamowienia/download/id/'+testWynnik) as f:
+                    #     html = f.read().decode('utf-8')
+                else:
+                    print("nie to")
+
+            print(testArr)
+            for j in testArr:
+                driver.execute_script("window.open('about:blank','secondtab');")
+                driver.switch_to.window("secondtab")
+                driver.get(j)
+                time.sleep(1)
+
         except:
             driver.close()
 
-        time.sleep(5)
-        driver.close()
-
+        time.sleep(3)
+        driver.quit()
+        self.unpack()
 
 svg2pdf().gui()
 
