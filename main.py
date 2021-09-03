@@ -28,40 +28,109 @@ import time
 # zf.close()
 
 
-class svg2pdf():
-    def gui(self):
-        root = Tk()
-        root.title('svg2pdf')
-        root.geometry('300x250')
-        root.resizable(width=False, height=False)
-        self.mainFrame = Frame(root)
-        self.mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
-        self.mainBtn = Button(self.mainFrame, text="Konwertuj obrazki w PDF", command=self.main)
-        self.mainBtn.pack()
-        self.testBtn = Button(self.mainFrame, text="Test", command=self.test_selenium)
-        self.testBtn.pack()
-        self.mainBtn["state"] = "disabled"
-        ZipBtn = Button(self.mainFrame, text="Gdzie masz zipy?", command=self.unpack)
-        ZipBtn.pack()
-        root.mainloop()
+class autoDownload():
+    def main(self):
+        shutil.rmtree("zip")
+        os.mkdir("zip", mode=0o777)
 
-    def unpack(self):
-        #self.removeOldFiles("svg/*")
-        zipDirectories = os.getcwd()+"\zip" #filedialog.askopenfiles()
-        tempZips = []
+        print("start test")
+        downloadLinks = []
+
+        driverPath = "chromedriver.exe"
+        zipFolderPath = os.getcwd() + "\zip"
+        chrome_options = webdriver.ChromeOptions()
+        prefs = {'download.default_directory': zipFolderPath}
+        chrome_options.add_experimental_option('prefs', prefs)
+        driver = webdriver.Chrome(driverPath, options=chrome_options)
+
+        driver.get("http://veraprinteu:81/admin/")
+        login = driver.find_element_by_id("signin_username")
+        login.send_keys("rodion.savenko@veraprint.pl")
+        password = driver.find_element_by_id("signin_password")
+        password.send_keys("Rodion123456")
+        password.send_keys(Keys.RETURN)
+
+        try:
+            btnToDo = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.LINK_TEXT, "TO DO"))
+            )
+            print(btnToDo.text)
+            btnToDo.click()
+            time.sleep(3)
+            tableToDo = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "indexform"))
+            )
+            zamowieniaToDo = tableToDo.find_elements_by_tag_name("tr")
+            # testTrs = testAnother[0].find_elements_by_tag_name("tr")
+            for zamowienie in zamowieniaToDo:
+                zamowienieId = zamowienie.get_attribute('id')
+                if "zamowienie" in zamowienieId:
+                    zamowienieNumer = zamowienieId.replace('zamowienie_', '')
+                    # driver.execute_script("window.open('about:blank','secondtab');")
+                    # driver.switch_to.window("secondtab")
+                    downloadLinks.append('http://veraprinteu:81/admin/index.php/zamowienia/download/id/' +
+                                         zamowienieNumer)
+                    # time.sleep(3)
+                    # with urllib.request.urlopen('http://veraprinteu:81/admin/index.php/zamowienia/download/id/'+testWynnik) as f:
+                    #     html = f.read().decode('utf-8')
+                else:
+                    print("nie to")
+
+            print(downloadLinks)
+            for downloadLink in downloadLinks:
+                driver.execute_script("window.open('about:blank','secondtab');")
+                driver.switch_to.window("secondtab")
+                driver.get(downloadLink)
+                time.sleep(1)
+
+        except:
+            driver.close()
+
+        time.sleep(3)
+        driver.quit()
+        print()
+        unpack().getDownloadedZip()
+
+class unpack():
+    def start(self):
+        self.zipPaths = []
         shutil.rmtree("svg")
         os.mkdir("svg", mode=0o777)
 
-        for root, dirs, files in os.walk(zipDirectories):
+    def getDownloadedZip(self):
+        self.start()
+        zipDirectory = os.getcwd() + "\zip"  # filedialog.askopenfiles()
+        for root, dirs, files in os.walk(zipDirectory):
             for file in files:
-                tempZips.append(os.path.join(root, file))
-
-        for zipDirectory in tempZips:
-            zf = ZipFile(str(zipDirectory), 'r')
-            zf.extractall('svg/')
-            zf.close()
+                self.zipPaths.append(os.path.join(root, file))
         self.main()
 
+    def getLocalZip(self):
+        self.start()
+        zipDirObjects = filedialog.askopenfiles()
+        for zipDirObject in zipDirObjects:
+            self.zipPaths.append(zipDirObject.name)
+        print(self.zipPaths)
+        self.main()
+
+    def main(self):
+        for zipPath in self.zipPaths:
+            zf = ZipFile(str(zipPath), 'r')
+            zf.extractall('svg/')
+            zf.close()
+        self.gui()
+    def gui(self):
+        # projectCountText = "Wybrano "+str(len(self.zipPaths))+" projektów"
+        # self.projectCount = Label(mainFrame, text=projectCountText, font="10px")
+        # self.projectCount.pack()
+
+        zipBtn["state"] = "disabled"
+        seleniumBtn["state"] = "disabled"
+
+        resetBtn["state"] = "active"
+        mainBtn["state"] = "active"
+
+class svg2pdf():
     def main(self):
         folder_list = glob.glob("svg/*")
         for folder in folder_list:
@@ -86,9 +155,9 @@ class svg2pdf():
 
                     except ValueError:
                         pass
-
                 if(path_list):
                     self.generatePDF(path_list, projekt)
+        reset().main()
 
     def generatePDF(self,path_list, projekt):
         print("generate")
@@ -108,72 +177,60 @@ class svg2pdf():
             merger.append(procesy[index])
 
         unique_filename = projekt.replace("\\", "-")
-        windowLog = Label(self.mainFrame, text=unique_filename, font="10px")
+        windowLog = Label(mainFrame, text=unique_filename, font="10px")
         windowLog.pack()
         with open('pdf/out_' + unique_filename + '.pdf', 'wb') as fout:
             merger.write(fout)
         for proces in procesy:
             proces.close()
-    def test_selenium(self):
+
+
+class reset():
+    def main(self):
+        shutil.rmtree("svg")
+        os.mkdir("svg", mode=0o777)
+        shutil.rmtree("tmp")
+        os.mkdir("tmp", mode=0o777)
         shutil.rmtree("zip")
         os.mkdir("zip", mode=0o777)
-        testArr = []
-        print("start test")
-        PATH = "C:/Users/Saven/Desktop/chromedriver.exe"
-        PATH1 = os.getcwd()+"\zip"
-        chrome_options = webdriver.ChromeOptions()
-        prefs = {'download.default_directory': PATH1}
-        chrome_options.add_experimental_option('prefs', prefs)
-        driver = webdriver.Chrome(PATH, options=chrome_options)
+        statusChange().unpack()
+        print("refreshed")
 
-        driver.get("http://veraprinteu:81/admin/")
-        login = driver.find_element_by_id("signin_username")
-        login.send_keys("rodion.savenko@veraprint.pl")
-        password = driver.find_element_by_id("signin_password")
-        password.send_keys("Rodion123456")
-        password.send_keys(Keys.RETURN)
 
-        try:
-            testToDO = WebDriverWait(driver,10).until(
-                EC.presence_of_element_located((By.LINK_TEXT, "TO DO"))
-            )
-            print(testToDO.text)
-            testToDO.click()
-            time.sleep(3)
-            testNext = WebDriverWait(driver,10).until(
-                EC.presence_of_element_located((By.ID, "indexform"))
-            )
-            testAnother = testNext.find_elements_by_tag_name("tr")
-            #testTrs = testAnother[0].find_elements_by_tag_name("tr")
-            for i in testAnother:
-                testId = i.get_attribute('id')
-                if "zamowienie" in testId:
-                    testWynnik = testId.replace('zamowienie_','')
-                    print(testWynnik)
-                    #driver.execute_script("window.open('about:blank','secondtab');")
-                    #driver.switch_to.window("secondtab")
-                    testArr.append('http://veraprinteu:81/admin/index.php/zamowienia/download/id/'+testWynnik)
-                    #time.sleep(3)
-                    # with urllib.request.urlopen('http://veraprinteu:81/admin/index.php/zamowienia/download/id/'+testWynnik) as f:
-                    #     html = f.read().decode('utf-8')
-                else:
-                    print("nie to")
+class statusChange():
+    def unpack(self):
+        print("here")
+        mainBtn["state"] = "disabled"
+        resetBtn["state"] = "disabled"
+        seleniumBtn["state"] = "active"
+        zipBtn["state"] = "active"
+    def convert(self):
+        mainBtn["state"] = "active"
+        resetBtn["state"] = "active"
+        seleniumBtn["state"] = "disabled"
+        zipBtn["state"] = "disabled"
 
-            print(testArr)
-            for j in testArr:
-                driver.execute_script("window.open('about:blank','secondtab');")
-                driver.switch_to.window("secondtab")
-                driver.get(j)
-                time.sleep(1)
 
-        except:
-            driver.close()
+root = Tk()
+root.title('svg2pdf')
+root.geometry('450x450')
+root.resizable(width=False, height=False)
+mainFrame = Frame(root)
+mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
+mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=svg2pdf().main)
+mainBtn.pack()
+seleniumBtn = Button(mainFrame, text="Automatycznie pobierz projekty z filtru 'TO DO'",
+                     command=autoDownload().main)
 
-        time.sleep(3)
-        driver.quit()
-        self.unpack()
+seleniumBtn.pack()
+mainBtn["state"] = "disabled"
+zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze", command=unpack().getLocalZip)
+zipBtn.pack()
+resetBtn = Button(mainFrame, text="Zresetuj wybrane zamowienia", command=reset().main)
+resetBtn.pack()
+resetBtn["state"] = "disabled"
+root.mainloop()
 
-svg2pdf().gui()
 
 
 
