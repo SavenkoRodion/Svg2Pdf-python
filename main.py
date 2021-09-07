@@ -29,15 +29,14 @@ class AutoDownload:
         shutil.rmtree("zip")
         os.mkdir("zip", mode=0o777)
 
-        print("start test")
-        downloadLinks = []
+        download_links = []
 
-        driverPath = "chromedriver-93.exe"
-        zipFolderPath = os.getcwd() + "\zip"
+        path_driver = "chromedriver-93.exe"
+        path_zip_folder = os.getcwd() + "\zip"
         chrome_options = webdriver.ChromeOptions()
-        prefs = {'download.default_directory': zipFolderPath}
+        prefs = {'download.default_directory': path_zip_folder}
         chrome_options.add_experimental_option('prefs', prefs)
-        driver = webdriver.Chrome(driverPath, options=chrome_options)
+        driver = webdriver.Chrome(path_driver, options=chrome_options)
 
         driver.get("http://veraprinteu:81/admin/")
         login = driver.find_element_by_id("signin_username")
@@ -47,35 +46,35 @@ class AutoDownload:
         password.send_keys(Keys.RETURN)
 
         try:
-            btnToDo = WebDriverWait(driver, 10).until(
+            to_do_btn = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.LINK_TEXT, "TO DO"))
             )
-            btnToDo.click()
+            to_do_btn.click()
             time.sleep(3)
-            tableToDo = WebDriverWait(driver, 10).until(
+            to_do_table = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "indexform"))
             )
-            zamowieniaToDo = tableToDo.find_elements_by_tag_name("tr")
+            to_do_zamowienia = to_do_table.find_elements_by_tag_name("tr")
             # testTrs = testAnother[0].find_elements_by_tag_name("tr")
-            for zamowienie in zamowieniaToDo:
-                zamowienieId = zamowienie.get_attribute('id')
-                if "zamowienie" in zamowienieId:
-                    zamowienieNumer = zamowienieId.replace('zamowienie_', '')
+            for zamowienie in to_do_zamowienia:
+                id_zamowienie = zamowienie.get_attribute('id')
+                if "zamowienie" in id_zamowienie:
+                    zamowienie_numer = id_zamowienie.replace('zamowienie_', '')
                     # driver.execute_script("window.open('about:blank','secondtab');")
                     # driver.switch_to.window("secondtab")
-                    downloadLinks.append('http://veraprinteu:81/admin/index.php/zamowienia/download/id/' +
-                                         zamowienieNumer)
+                    download_links.append('http://veraprinteu:81/admin/index.php/zamowienia/download/id/' +
+                                         zamowienie_numer)
                     # time.sleep(3)
                     # with urllib.request.urlopen('http://veraprinteu:81/admin/index.php/zamowienia/download/id/'+testWynnik) as f:
                     #     html = f.read().decode('utf-8')
                 else:
                     print("nie to")
 
-            print(downloadLinks)
-            for downloadLink in downloadLinks:
+            print(download_links)
+            for download_link in download_links:
                 driver.execute_script("window.open('about:blank','secondtab');")
                 driver.switch_to.window("secondtab")
-                driver.get(downloadLink)
+                driver.get(download_link)
                 time.sleep(1)
 
         except:
@@ -83,99 +82,102 @@ class AutoDownload:
 
         time.sleep(3)
         driver.quit()
-        print()
-        unpack().getDownloadedZip()
+        Unpack().get_downloaded_zip()
 
-class unpack():
+
+class Unpack:
     def start(self):
-        self.zipPaths = []
+        self.zip_paths = []
         shutil.rmtree("svg")
         os.mkdir("svg", mode=0o777)
 
-    def getDownloadedZip(self):
+    def get_downloaded_zip(self):
         self.start()
-        zipDirectory = os.getcwd() + "\zip"  # filedialog.askopenfiles()
-        for root, dirs, files in os.walk(zipDirectory):
+        zip_directory = os.getcwd() + "\zip"  # filedialog.askopenfiles()
+        for root, dirs, files in os.walk(zip_directory):
             for file in files:
-                self.zipPaths.append(os.path.join(root, file))
+                self.zip_paths.append(os.path.join(root, file))
         self.main()
 
-    def getLocalZip(self):
+    def get_local_zip(self):
         self.start()
-        zipDirObjects = filedialog.askopenfiles()
-        for zipDirObject in zipDirObjects:
-            self.zipPaths.append(zipDirObject.name)
-        print(self.zipPaths)
+        zip_dir_objects = filedialog.askopenfiles()
+        for zip_dir_object in zip_dir_objects:
+            self.zip_paths.append(zip_dir_object.name)
+        print(self.zip_paths)
         self.main()
 
     def main(self):
-        for zipPath in self.zipPaths:
-            zf = ZipFile(str(zipPath), 'r')
+        for zip_path in self.zip_paths:
+            zf = ZipFile(str(zip_path), 'r')
             zf.extractall('svg/')
             zf.close()
         self.gui()
+
     def gui(self):
-        # projectCountText = "Wybrano "+str(len(self.zipPaths))+" projektów"
+        # projectCountText = "Wybrano "+str(len(self.zip_paths))+" projektów"
         # self.projectCount = Label(mainFrame, text=projectCountText, font="10px")
         # self.projectCount.pack()
-        statusChange().convert()
+        StatusChange().convert()
 
-class svg2pdf():
+
+class SVG2PDF:
     def main(self):
-        folder_list = glob.glob("svg/*")
-        for folder in folder_list:
-            projekt_list = glob.glob(folder+"/*")
-            for projekt in projekt_list:
-                file_list = []
-                svg_list = []
-                path_list = []
+        list_folder = glob.glob("svg/*")
+        for folder in list_folder:
+            list_projekt = glob.glob(folder+"/*")
+            for projekt in list_projekt:
+                list_file = []
+                list_svg = []
+                list_path = []
                 # print(projekt)
 
-                files_path = glob.glob(projekt+"/*")
+                path_files = glob.glob(projekt+"/*")
 
-                for file_path in files_path:
-                    file = os.path.basename(file_path)
-                    file_list.append(file)
+                for path_file in path_files:
+                    file = os.path.basename(path_file)
+                    list_file.append(file)
 
-                for index, file in enumerate(file_list):
+                for index, file in enumerate(list_file):
                     try:
                         if int(file[0]):
-                            svg_list.append(file)
-                            path_list.append(files_path[index])
+                            list_svg.append(file)
+                            list_path.append(path_files[index])
 
                     except ValueError:
                         pass
-                if(path_list):
-                    self.generatePDF(path_list, projekt)
-        reset().main()
 
-    def generatePDF(self,path_list, projekt):
+                if list_path:
+                    self.GeneratePDF(list_path, projekt)
+        Reset().main()
+
+    def GeneratePDF(self, list_path, projekt):
         print("generate")
-        old_pdf_list = glob.glob("tmp/*.pdf")
-        for i in old_pdf_list:
+        list_old_pdf = glob.glob("tmp/*.pdf")
+        for i in list_old_pdf:
             print(i)
             os.remove(i)
 
-        for index, svg_path in enumerate(path_list):
+        for index, svg_path in enumerate(list_path):
             cairosvg.svg2pdf(url=svg_path, write_to='tmp/image' + str(index) + '.pdf', dpi=72)
-        pdf_list = glob.glob("tmp/*")
+        list_pdf = glob.glob("tmp/*")
         merger = PdfFileMerger()
         procesy = []
-        for index, pdf in enumerate(pdf_list):
-            print(pdf_list)
+        for index, pdf in enumerate(list_pdf):
+            print(list_pdf)
             procesy.append(open(pdf, "rb"))
             merger.append(procesy[index])
 
         unique_filename = projekt.replace("\\", "-")
-        windowLog = Label(mainFrame, text=unique_filename, font="10px")
-        windowLog.pack()
+        window_log = Label(mainFrame, text=unique_filename, font="10px")
+        window_log.pack()
         with open('pdf/out_' + unique_filename + '.pdf', 'wb') as fout:
             merger.write(fout)
         for proces in procesy:
             proces.close()
 
 
-class reset():
+class Reset:
     def main(self):
         shutil.rmtree("svg")
         os.mkdir("svg", mode=0o777)
@@ -183,11 +185,11 @@ class reset():
         os.mkdir("tmp", mode=0o777)
         shutil.rmtree("zip")
         os.mkdir("zip", mode=0o777)
-        statusChange().unpack()
+        StatusChange().unpack()
         print("refreshed")
 
 
-class statusChange():
+class StatusChange():
     def unpack(self):
         mainBtn["state"] = "disabled"
         resetBtn["state"] = "disabled"
@@ -206,15 +208,17 @@ root.geometry('400x400')
 root.resizable(width=False, height=False)
 mainFrame = Frame(root)
 mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
-mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=lambda:threading.Thread(target=svg2pdf().main).start())
+mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=lambda:threading.Thread(target=SVG2PDF().main).start())
 mainBtn.pack()
 seleniumBtn = Button(mainFrame, text="Automatycznie pobierz projekty z filtru 'TO DO'",
-                     command=lambda:threading.Thread(target=AutoDownload().main).start())
+                     command=lambda: threading.Thread(target=AutoDownload().main).start())
 seleniumBtn.pack()
 mainBtn["state"] = "disabled"
-zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze", command=lambda:threading.Thread(target=unpack().getLocalZip).start())
+zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze",
+                command=lambda: threading.Thread(target=Unpack().get_local_zip()).start())
 zipBtn.pack()
-resetBtn = Button(mainFrame, text="Zresetuj wybrane zamowienia", command=lambda:threading.Thread(target=reset().main).start())
+resetBtn = Button(mainFrame, text="Zresetuj wybrane zamowienia",
+                  command=lambda: threading.Thread(target=Reset().main).start())
 resetBtn.pack()
 resetBtn["state"] = "disabled"
 root.mainloop()
