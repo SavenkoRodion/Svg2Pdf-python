@@ -1,12 +1,4 @@
-import cairosvg
-import glob
-import os
-from tkinter import *
-from PyPDF2 import PdfFileMerger
-from tkinter import filedialog
-from zipfile import ZipFile
-import shutil
-import urllib.request
+import cairosvg,glob,os,shutil,time,threading
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -14,8 +6,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import WebDriverException
+from tkinter import *
+from PyPDF2 import PdfFileMerger
+from tkinter import filedialog
+from zipfile import ZipFile
+import urllib.request
 
-import time
 # Rozpakować można na różne sposoby, później zastanowie się jaki jest najlepszy
 
 # with zipfile.ZipFile(zipDirectory, 'r') as zip_ref:
@@ -28,7 +24,7 @@ import time
 # zf.close()
 
 
-class autoDownload():
+class AutoDownload:
     def main(self):
         shutil.rmtree("zip")
         os.mkdir("zip", mode=0o777)
@@ -36,7 +32,7 @@ class autoDownload():
         print("start test")
         downloadLinks = []
 
-        driverPath = "chromedriver.exe"
+        driverPath = "chromedriver-93.exe"
         zipFolderPath = os.getcwd() + "\zip"
         chrome_options = webdriver.ChromeOptions()
         prefs = {'download.default_directory': zipFolderPath}
@@ -54,7 +50,6 @@ class autoDownload():
             btnToDo = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.LINK_TEXT, "TO DO"))
             )
-            print(btnToDo.text)
             btnToDo.click()
             time.sleep(3)
             tableToDo = WebDriverWait(driver, 10).until(
@@ -123,12 +118,7 @@ class unpack():
         # projectCountText = "Wybrano "+str(len(self.zipPaths))+" projektów"
         # self.projectCount = Label(mainFrame, text=projectCountText, font="10px")
         # self.projectCount.pack()
-
-        zipBtn["state"] = "disabled"
-        seleniumBtn["state"] = "disabled"
-
-        resetBtn["state"] = "active"
-        mainBtn["state"] = "active"
+        statusChange().convert()
 
 class svg2pdf():
     def main(self):
@@ -199,7 +189,6 @@ class reset():
 
 class statusChange():
     def unpack(self):
-        print("here")
         mainBtn["state"] = "disabled"
         resetBtn["state"] = "disabled"
         seleniumBtn["state"] = "active"
@@ -213,20 +202,19 @@ class statusChange():
 
 root = Tk()
 root.title('svg2pdf')
-root.geometry('450x450')
+root.geometry('400x400')
 root.resizable(width=False, height=False)
 mainFrame = Frame(root)
 mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
-mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=svg2pdf().main)
+mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=lambda:threading.Thread(target=svg2pdf().main).start())
 mainBtn.pack()
 seleniumBtn = Button(mainFrame, text="Automatycznie pobierz projekty z filtru 'TO DO'",
-                     command=autoDownload().main)
-
+                     command=lambda:threading.Thread(target=AutoDownload().main).start())
 seleniumBtn.pack()
 mainBtn["state"] = "disabled"
-zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze", command=unpack().getLocalZip)
+zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze", command=lambda:threading.Thread(target=unpack().getLocalZip).start())
 zipBtn.pack()
-resetBtn = Button(mainFrame, text="Zresetuj wybrane zamowienia", command=reset().main)
+resetBtn = Button(mainFrame, text="Zresetuj wybrane zamowienia", command=lambda:threading.Thread(target=reset().main).start())
 resetBtn.pack()
 resetBtn["state"] = "disabled"
 root.mainloop()
