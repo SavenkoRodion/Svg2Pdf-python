@@ -190,7 +190,7 @@ class Reset:
         print("refreshed")
 
 
-class StatusChange():
+class StatusChange:
     def unpack(self):
         mainBtn["state"] = "disabled"
         resetBtn["state"] = "disabled"
@@ -202,6 +202,34 @@ class StatusChange():
         resetBtn["state"] = "active"
         seleniumBtn["state"] = "disabled"
         zipBtn["state"] = "disabled"
+
+
+class TestWindow:
+    def main(self):
+        global new_window
+        global new_frame
+        root.withdraw()
+        new_window = Toplevel(root)
+
+        # sets the title of the
+        # Toplevel widget
+        new_window.title("New Window")
+
+        # sets the geometry of toplevel
+        new_window.geometry("200x200")
+
+        new_frame = Frame(new_window)
+        new_frame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
+
+        anotherBtn = Button(
+            new_frame, text="Make another window", command=another)
+        anotherBtn.pack()
+        
+def another():
+    print(new_window)
+    root.deiconify()
+    new_window.destroy()
+
 
 
 root = Tk()
@@ -219,6 +247,9 @@ mainBtn["state"] = "disabled"
 zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze",
                 command=lambda: threading.Thread(target=Unpack().get_local_zip()).start())
 zipBtn.pack()
+newWindowBtn = Button(
+    mainFrame, text="Make new window", command=TestWindow().main)
+newWindowBtn.pack()
 resetBtn = Button(mainFrame, text="Zresetuj wybrane zamowienia",
                   command=lambda: threading.Thread(target=Reset().main).start())
 resetBtn.pack()
