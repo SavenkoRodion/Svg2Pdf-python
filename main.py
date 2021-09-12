@@ -62,10 +62,11 @@ class AutoDownload:
                     zamowienie_numer = id_zamowienie.replace('zamowienie_', '')
                     # driver.execute_script("window.open('about:blank','secondtab');")
                     # driver.switch_to.window("secondtab")
-                    download_links.append('http://veraprinteu:81/admin/index.php/zamowienia/download/id/' +
-                                         zamowienie_numer)
+                    download_links.append(
+                        'http://veraprinteu:81/admin/index.php/zamowienia/download/id/' + zamowienie_numer)
                     # time.sleep(3)
-                    # with urllib.request.urlopen('http://veraprinteu:81/admin/index.php/zamowienia/download/id/'+testWynnik) as f:
+                    # with urllib.request.urlopen('http://veraprinteu:81
+                    # /admin/index.php/zamowienia/download/id/'+testWynnik) as f:
                     #     html = f.read().decode('utf-8')
                 else:
                     print("nie to")
@@ -93,7 +94,7 @@ class Unpack:
 
     def get_downloaded_zip(self):
         self.start()
-        zip_directory = os.getcwd() + "\zip"  # filedialog.askopenfiles()
+        zip_directory = os.getcwd() + "\\zip"  # filedialog.askopenfiles()
         for root, dirs, files in os.walk(zip_directory):
             for file in files:
                 self.zip_paths.append(os.path.join(root, file))
@@ -148,10 +149,10 @@ class SVG2PDF:
                         pass
 
                 if list_path:
-                    self.GeneratePDF(list_path, projekt)
+                    self.generate_pdf(list_path, projekt)
         Reset().main()
 
-    def GeneratePDF(self, list_path, projekt):
+    def generate_pdf(self, list_path, projekt):
         print("generate")
         list_old_pdf = glob.glob("tmp/*.pdf")
         for i in list_old_pdf:
@@ -195,6 +196,7 @@ class StatusChange():
         resetBtn["state"] = "disabled"
         seleniumBtn["state"] = "active"
         zipBtn["state"] = "active"
+
     def convert(self):
         mainBtn["state"] = "active"
         resetBtn["state"] = "active"
@@ -208,7 +210,7 @@ root.geometry('400x400')
 root.resizable(width=False, height=False)
 mainFrame = Frame(root)
 mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
-mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=lambda:threading.Thread(target=SVG2PDF().main).start())
+mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=lambda: threading.Thread(target=SVG2PDF().main).start())
 mainBtn.pack()
 seleniumBtn = Button(mainFrame, text="Automatycznie pobierz projekty z filtru 'TO DO'",
                      command=lambda: threading.Thread(target=AutoDownload().main).start())
