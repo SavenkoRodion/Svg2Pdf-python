@@ -28,29 +28,29 @@ class AutoDownload:
         shutil.rmtree("zip")
         os.mkdir("zip", mode=0o777)
 
-        download_links = []
-
         path_driver = "chromedriver-93.exe"
-        path_zip_folder = os.getcwd() + "\zip"
+        path_zip_folder = os.getcwd() + "\\zip"
         chrome_options = webdriver.ChromeOptions()
         prefs = {'download.default_directory': path_zip_folder}
         chrome_options.add_experimental_option('prefs', prefs)
-        driver = webdriver.Chrome(path_driver, options=chrome_options)
+        self.driver = webdriver.Chrome(path_driver, options=chrome_options)
 
-        driver.get("http://veraprinteu:81/admin/")
-        login = driver.find_element_by_id("signin_username")
+        self.driver.get("http://veraprinteu:81/admin/")
+        login = self.driver.find_element_by_id("signin_username")
         login.send_keys("rodion.savenko@veraprint.pl")
-        password = driver.find_element_by_id("signin_password")
+        password = self.driver.find_element_by_id("signin_password")
         password.send_keys("Rodion123456")
         password.send_keys(Keys.RETURN)
-
+        self.download()
+    def download(self):
+        download_links = []
         try:
-            to_do_btn = WebDriverWait(driver, 10).until(
+            to_do_btn = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.LINK_TEXT, "TO DO"))
             )
             to_do_btn.click()
             time.sleep(3)
-            to_do_table = WebDriverWait(driver, 10).until(
+            to_do_table = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.ID, "indexform"))
             )
             to_do_zamowienia = to_do_table.find_elements_by_tag_name("tr")
@@ -72,16 +72,16 @@ class AutoDownload:
 
             print(download_links)
             for download_link in download_links:
-                driver.execute_script("window.open('about:blank','secondtab');")
-                driver.switch_to.window("secondtab")
-                driver.get(download_link)
+                self.driver.execute_script("window.open('about:blank','secondtab');")
+                self.driver.switch_to.window("secondtab")
+                self.driver.get(download_link)
                 time.sleep(1)
 
         except:
-            driver.close()
+            self.driver.close()
 
         time.sleep(3)
-        driver.quit()
+        self.driver.quit()
         Unpack().get_downloaded_zip()
 
 
