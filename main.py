@@ -23,7 +23,6 @@ import urllib.request
 # zf.extractall('svg/')
 # zf.close()
 
-
 class AutoDownload:
     def main(self):
         shutil.rmtree("zip")
@@ -205,6 +204,10 @@ class StatusChange:
 
 
 class TestWindow:
+    def __init__(self):
+        print("inside init")
+        self.test_n = 0
+
     def main(self):
         global new_window
         global new_frame
@@ -226,14 +229,23 @@ class TestWindow:
         test_entry.pack()
 
         btn_confirm = Button(
-            new_frame, text="Podtwierdz", command=TestWindow.add_value())
+            new_frame, text="Podtwierdz", command=TestWindow().add_value)
         btn_confirm.pack()
 
         anotherBtn = Button(
             new_frame, text="Przejdz do konwertacji", command=another)
         anotherBtn.pack()
-
-
+    def add_value(self):
+        self.test_n+=1
+        test_entry1 =Entry(new_frame)
+        test_entry1.insert(0,test_entry.get())
+        test_entry1['state'] = 'disable'
+        test_entry1.pack()
+        print(self.test_n)
+        # temp_number+=1
+        # entry_dictionary = {}
+        # entry_dictionary["string{0}".format(temp_number)] = Entry(new_frame)
+        # print(entry_dictionary)
 
 def another():
     print(test_entry.get())
