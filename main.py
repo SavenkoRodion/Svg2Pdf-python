@@ -207,51 +207,67 @@ class TestWindow:
     def __init__(self):
         print("inside init")
         self.test_n = 0
-
     def main(self):
-        global new_window
-        global new_frame
-        global test_entry
+        # global new_window
+        # global new_frame
+        # global test_entry
         root.withdraw()
-        new_window = Toplevel(root)
+        self.new_window = Toplevel(root)
 
         # sets the title of the
         # Toplevel widget
-        new_window.title("New Window")
+        self.new_window.title("New Window")
 
         # sets the geometry of toplevel
-        new_window.geometry("400x400")
+        self.new_window.geometry("400x400")
 
-        new_frame = Frame(new_window)
-        new_frame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
+        self.new_frame = Frame(self.new_window)
+        self.new_frame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
 
-        test_entry = Entry(new_frame)
-        test_entry.pack()
+        self.test_entry = Entry(self.new_frame)
+        self.test_entry.pack()
 
         btn_confirm = Button(
-            new_frame, text="Podtwierdz", command=TestWindow().add_value)
+            self.new_frame, text="Podtwierdz", command=self.add_value)
         btn_confirm.pack()
 
         anotherBtn = Button(
-            new_frame, text="Przejdz do konwertacji", command=another)
+            self.new_frame, text="Pobierz wybrane zamowienia", command=self.another)
         anotherBtn.pack()
     def add_value(self):
         self.test_n+=1
-        test_entry1 =Entry(new_frame)
-        test_entry1.insert(0,test_entry.get())
+        test_entry1 =Entry(self.new_frame)
+        test_entry1.insert(0,self.test_entry.get())
         test_entry1['state'] = 'disable'
         test_entry1.pack()
+
+        btn_remove = Button(
+            self.new_frame, text="X", command=self.remove)
+        btn_remove.pack()
+
         print(self.test_n)
+
         # temp_number+=1
         # entry_dictionary = {}
         # entry_dictionary["string{0}".format(temp_number)] = Entry(new_frame)
         # print(entry_dictionary)
 
-def another():
-    print(test_entry.get())
-    root.deiconify()
-    new_window.destroy()
+    def remove(self):
+        print("lol")
 
+    def another(self):
+        temp_arr = []
+        print(self.test_entry.get())
+        for child in self.new_frame.winfo_children():
+            if child['state'] == "disabled":
+                temp_arr.append(child.get())
+        temp_gui_function(temp_arr)
+        root.deiconify()
+        self.new_window.destroy()
+
+def temp_gui_function(temp_arr):
+    print("here")
+    print(temp_arr)
 
 
 root = Tk()
