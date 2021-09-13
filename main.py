@@ -208,6 +208,7 @@ class TestWindow:
     def main(self):
         global new_window
         global new_frame
+        global test_entry
         root.withdraw()
         new_window = Toplevel(root)
 
@@ -216,17 +217,26 @@ class TestWindow:
         new_window.title("New Window")
 
         # sets the geometry of toplevel
-        new_window.geometry("200x200")
+        new_window.geometry("400x400")
 
         new_frame = Frame(new_window)
         new_frame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
 
+        test_entry = Entry(new_frame)
+        test_entry.pack()
+
+        btn_confirm = Button(
+            new_frame, text="Podtwierdz", command=TestWindow.add_value())
+        btn_confirm.pack()
+
         anotherBtn = Button(
-            new_frame, text="Make another window", command=another)
+            new_frame, text="Przejdz do konwertacji", command=another)
         anotherBtn.pack()
-        
+
+
+
 def another():
-    print(new_window)
+    print(test_entry.get())
     root.deiconify()
     new_window.destroy()
 
