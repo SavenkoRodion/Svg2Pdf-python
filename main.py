@@ -24,7 +24,7 @@ import urllib.request
 # zf.close()
 
 class AutoDownload:
-    def main(self):
+    def main(self,download_type,*ids):
         shutil.rmtree("zip")
         os.mkdir("zip", mode=0o777)
 
@@ -41,9 +41,12 @@ class AutoDownload:
         password = self.driver.find_element_by_id("signin_password")
         password.send_keys("Rodion123456")
         password.send_keys(Keys.RETURN)
-        self.download()
-    def download(self):
-        download_links = []
+        self.download_links = []
+        if download_type == "direct":
+            self.create_download_links(ids)
+        elif download_type == "to_do":
+            self.get_zamowienia()
+    def get_zamowienia(self):
         try:
             to_do_btn = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.LINK_TEXT, "TO DO"))
@@ -61,7 +64,7 @@ class AutoDownload:
                     zamowienie_numer = id_zamowienie.replace('zamowienie_', '')
                     # driver.execute_script("window.open('about:blank','secondtab');")
                     # driver.switch_to.window("secondtab")
-                    download_links.append(
+                    self.download_links.append(
                         'http://veraprinteu:81/admin/index.php/zamowienia/download/id/' + zamowienie_numer)
                     # time.sleep(3)
                     # with urllib.request.urlopen('http://veraprinteu:81
@@ -70,20 +73,28 @@ class AutoDownload:
                 else:
                     print("nie to")
 
-            print(download_links)
-            for download_link in download_links:
-                self.driver.execute_script("window.open('about:blank','secondtab');")
-                self.driver.switch_to.window("secondtab")
-                self.driver.get(download_link)
-                time.sleep(1)
+            print(self.download_links)
+            self.download()
 
         except:
             self.driver.close()
 
+    def create_download_links(self, *ids):
+        for id in ids[0][0]:
+            print(id)
+            self.download_links.append(
+                'http://veraprinteu:81/admin/index.php/zamowienia/download/id/' + id)
+        print(self.download_links)
+        self.download()
+    def download(self):
+        for download_link in self.download_links:
+            self.driver.execute_script("window.open('about:blank','secondtab');")
+            self.driver.switch_to.window("secondtab")
+            self.driver.get(download_link)
+            time.sleep(1)
         time.sleep(3)
         self.driver.quit()
-        Unpack().get_downloaded_zip()
-
+        StatusChange().convert()
 
 class Unpack:
     def start(self):
@@ -195,13 +206,14 @@ class StatusChange:
         resetBtn["state"] = "disabled"
         seleniumBtn["state"] = "active"
         zipBtn["state"] = "active"
+        newWindowBtn["state"] = "active"
 
     def convert(self):
         mainBtn["state"] = "active"
         resetBtn["state"] = "active"
         seleniumBtn["state"] = "disabled"
         zipBtn["state"] = "disabled"
-
+        newWindowBtn["state"] = "disabled"
 
 class TestWindow:
     def __init__(self):
@@ -232,8 +244,12 @@ class TestWindow:
         btn_confirm.pack()
 
         anotherBtn = Button(
-            self.new_frame, text="Pobierz wybrane zamowienia", command=self.another)
+            self.new_frame, text="Pobierz wybrane zamowienia", command=lambda: threading.Thread(target=self.another).start())
         anotherBtn.pack()
+        backBtn = Button(
+            self.new_frame, text="Wróć", command=self.destroy)
+        backBtn.pack()
+
     def add_value(self):
         self.test_n+=1
         test_entry1 =Entry(self.new_frame)
@@ -255,19 +271,17 @@ class TestWindow:
     def remove(self):
         print("lol")
 
+    def destroy(self):
+        root.deiconify()
+        self.new_window.destroy()
     def another(self):
         temp_arr = []
         print(self.test_entry.get())
         for child in self.new_frame.winfo_children():
             if child['state'] == "disabled":
                 temp_arr.append(child.get())
-        temp_gui_function(temp_arr)
-        root.deiconify()
-        self.new_window.destroy()
-
-def temp_gui_function(temp_arr):
-    print("here")
-    print(temp_arr)
+        self.destroy()
+        AutoDownload().main("direct",temp_arr)
 
 
 root = Tk()
@@ -279,17 +293,17 @@ mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
 mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=lambda: threading.Thread(target=SVG2PDF().main).start())
 mainBtn.pack()
 seleniumBtn = Button(mainFrame, text="Automatycznie pobierz projekty z filtru 'TO DO'",
-                     command=lambda: threading.Thread(target=AutoDownload().main).start())
+                     command=lambda: threading.Thread(target=AutoDownload().main("to_do")).start())
 seleniumBtn.pack()
 mainBtn["state"] = "disabled"
 zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze",
-                command=lambda: threading.Thread(target=Unpack().get_local_zip()).start())
+                command=Unpack().get_local_zip)
 zipBtn.pack()
 newWindowBtn = Button(
-    mainFrame, text="Make new window", command=TestWindow().main)
+    mainFrame, text="Pobierz zamówienia wprowadzając id", command=TestWindow().main)
 newWindowBtn.pack()
 resetBtn = Button(mainFrame, text="Zresetuj wybrane zamowienia",
-                  command=lambda: threading.Thread(target=Reset().main).start())
+                  command=Reset().main)
 resetBtn.pack()
 resetBtn["state"] = "disabled"
 root.mainloop()
