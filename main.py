@@ -92,10 +92,10 @@ class AutoDownload:
             self.driver.switch_to.window("secondtab")
             self.driver.get(download_link)
             time.sleep(1)
-        time.sleep(3)
+        time.sleep(5)
         self.driver.quit()
         StatusChange().convert()
-
+        Unpack().get_downloaded_zip()
 class Unpack:
     def start(self):
         self.zip_paths = []
@@ -134,6 +134,7 @@ class Unpack:
 
 class SVG2PDF:
     def main(self):
+        print("1")
         list_folder = glob.glob("svg/*")
         for folder in list_folder:
             list_projekt = glob.glob(folder+"/*")
