@@ -35,7 +35,7 @@ class AutoDownload:
         chrome_options.add_experimental_option('prefs', prefs)
         self.driver = webdriver.Chrome(path_driver, options=chrome_options)
 
-        self.driver.get("http://veraprinteu:81/admin/")
+        self.driver.get("http://veraprint.eu/admin/")
         login = self.driver.find_element_by_id("signin_username")
         login.send_keys("rodion.savenko@veraprint.pl")
         password = self.driver.find_element_by_id("signin_password")
@@ -65,7 +65,7 @@ class AutoDownload:
                     # driver.execute_script("window.open('about:blank','secondtab');")
                     # driver.switch_to.window("secondtab")
                     self.download_links.append(
-                        'http://veraprinteu:81/admin/index.php/zamowienia/download/id/' + zamowienie_numer)
+                        'http://veraprint.eu/admin/index.php/zamowienia/download/id/' + zamowienie_numer)
                     # time.sleep(3)
                     # with urllib.request.urlopen('http://veraprinteu:81
                     # /admin/index.php/zamowienia/download/id/'+testWynnik) as f:
@@ -83,7 +83,7 @@ class AutoDownload:
         for id in ids[0][0]:
             print(id)
             self.download_links.append(
-                'http://veraprinteu:81/admin/index.php/zamowienia/download/id/' + id)
+                'http://veraprint.eu/admin/index.php/zamowienia/download/id/' + id)
         print(self.download_links)
         self.download()
     def download(self):
@@ -216,33 +216,19 @@ class StatusChange:
         newWindowBtn["state"] = "disabled"
 
 class TestWindow:
-    def __init__(self):
-        print("inside init")
-        self.test_n = 0
     def main(self):
-        # global new_window
-        # global new_frame
-        # global test_entry
+        self.test_number = 1
         root.withdraw()
         self.new_window = Toplevel(root)
-
-        # sets the title of the
-        # Toplevel widget
         self.new_window.title("New Window")
-
-        # sets the geometry of toplevel
         self.new_window.geometry("400x400")
-
         self.new_frame = Frame(self.new_window)
         self.new_frame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
-
         self.test_entry = Entry(self.new_frame)
         self.test_entry.pack()
-
         btn_confirm = Button(
             self.new_frame, text="Podtwierdz", command=self.add_value)
         btn_confirm.pack()
-
         anotherBtn = Button(
             self.new_frame, text="Pobierz wybrane zamowienia", command=lambda: threading.Thread(target=self.another).start())
         anotherBtn.pack()
@@ -251,25 +237,27 @@ class TestWindow:
         backBtn.pack()
 
     def add_value(self):
-        self.test_n+=1
         test_entry1 =Entry(self.new_frame)
         test_entry1.insert(0,self.test_entry.get())
         test_entry1['state'] = 'disable'
         test_entry1.pack()
+        print("which one?")
+        self.test_number+=1
+        print(self.test_number)
 
         btn_remove = Button(
-            self.new_frame, text="X", command=self.remove)
+            self.new_frame, text="X", command=lambda btn_id=self.test_number: self.remove(btn_id))
         btn_remove.pack()
 
-        print(self.test_n)
 
-        # temp_number+=1
-        # entry_dictionary = {}
-        # entry_dictionary["string{0}".format(temp_number)] = Entry(new_frame)
-        # print(entry_dictionary)
-
-    def remove(self):
-        print("lol")
+    def remove(self,btn_id):
+        print(btn_id)
+        for child in self.new_frame.winfo_children():
+            print(child.winfo_name())
+            if child.winfo_name() == "!entry"+str(btn_id):
+                child.destroy()
+            elif child.winfo_name() == "!button"+str(btn_id+2):
+                child.destroy()
 
     def destroy(self):
         root.deiconify()
@@ -296,12 +284,12 @@ seleniumBtn = Button(mainFrame, text="Automatycznie pobierz projekty z filtru 'T
                      command=lambda: threading.Thread(target=AutoDownload().main("to_do")).start())
 seleniumBtn.pack()
 mainBtn["state"] = "disabled"
-zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze",
-                command=Unpack().get_local_zip)
-zipBtn.pack()
 newWindowBtn = Button(
     mainFrame, text="Pobierz zamówienia wprowadzając id", command=TestWindow().main)
 newWindowBtn.pack()
+zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze",
+                command=Unpack().get_local_zip)
+zipBtn.pack()
 resetBtn = Button(mainFrame, text="Zresetuj wybrane zamowienia",
                   command=Reset().main)
 resetBtn.pack()
