@@ -36,6 +36,7 @@ class AutoDownload:
         self.driver = webdriver.Chrome(path_driver, options=chrome_options)
 
         self.driver.get("http://veraprint.eu/admin/")
+        self.driver.maximize_window()
         login = self.driver.find_element_by_id("signin_username")
         login.send_keys("rodion.savenko@veraprint.pl")
         password = self.driver.find_element_by_id("signin_password")
@@ -279,14 +280,14 @@ root.geometry('400x400')
 root.resizable(width=False, height=False)
 mainFrame = Frame(root)
 mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
-mainBtn = Button(mainFrame, text="Konwertuj obrazki w PDF", command=lambda: threading.Thread(target=SVG2PDF().main).start())
+mainBtn = Button(mainFrame, text="Konwertuj SVG w PDF", command=lambda: threading.Thread(target=SVG2PDF().main).start())
 mainBtn.pack()
-seleniumBtn = Button(mainFrame, text="Automatycznie pobierz projekty z filtru 'TO DO'",
+seleniumBtn = Button(mainFrame, text="Pobierz zamówienia z filtru 'TO DO'",
                      command=lambda: threading.Thread(target=AutoDownload().main("to_do")).start())
 seleniumBtn.pack()
 mainBtn["state"] = "disabled"
 newWindowBtn = Button(
-    mainFrame, text="Pobierz zamówienia wprowadzając id", command=TestWindow().main)
+    mainFrame, text="Pobierz zamówienia wprowadzając numer", command=TestWindow().main)
 newWindowBtn.pack()
 zipBtn = Button(mainFrame, text="Znajdź zipy na swoim komputerze",
                 command=Unpack().get_local_zip)
