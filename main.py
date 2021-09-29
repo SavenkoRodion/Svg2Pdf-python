@@ -161,16 +161,21 @@ class SVG2PDF:
                         pass
 
                 if list_path:
-                    self.generate_pdf(list_path, projekt)
+                    self.start(list_path, projekt)
         Reset().main()
 
-    def generate_pdf(self, list_path, projekt):
+    def start(self, list_path, projekt):
         print("generate")
         list_old_pdf = glob.glob("tmp/*.pdf")
         for i in list_old_pdf:
-            print(i)
             os.remove(i)
+        try:
+            self.generate_pdf(list_path, projekt)
+        except:
+            print("Error!")
 
+    def generate_pdf(self, list_path, projekt):
+        print("Udalo sie")
         for index, svg_path in enumerate(list_path):
             cairosvg.svg2pdf(url=svg_path, write_to='tmp/image' + str(index) + '.pdf', dpi=72)
         list_pdf = glob.glob("tmp/*")
@@ -188,7 +193,6 @@ class SVG2PDF:
             merger.write(fout)
         for proces in procesy:
             proces.close()
-
 
 class Reset:
     def main(self):
