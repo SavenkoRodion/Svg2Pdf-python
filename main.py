@@ -22,6 +22,8 @@ import urllib.request
 # zf = ZipFile(str(zipDirectory.name), 'r')
 # zf.extractall('svg/')
 # zf.close()
+global log
+log = {"skonwertowałem": [], "error": []}
 
 class AutoDownload:
     def main(self,download_type,*ids):
@@ -135,7 +137,6 @@ class Unpack:
 
 class SVG2PDF:
     def main(self):
-        print("1")
         list_folder = glob.glob("svg/*")
         for folder in list_folder:
             list_projekt = glob.glob(folder+"/*")
@@ -166,12 +167,20 @@ class SVG2PDF:
 
     def start(self, list_path, projekt):
         print("generate")
+        print(projekt[18:23])
+
+
         list_old_pdf = glob.glob("tmp/*.pdf")
         for i in list_old_pdf:
             os.remove(i)
         try:
             self.generate_pdf(list_path, projekt)
         except:
+            # self.prepare_log(projekt,"error")
+            if projekt[40] == "\\":
+                log["error"].append(projekt[18:23] + "-" + projekt[41])
+            else:
+                log["error"].append(projekt[18:23] + "-" + projekt[40:41])
             print("Error!")
 
     def generate_pdf(self, list_path, projekt):
@@ -187,12 +196,27 @@ class SVG2PDF:
             merger.append(procesy[index])
 
         unique_filename = projekt.replace("\\", "-")
-        window_log = Label(mainFrame, text=unique_filename, font="10px")
-        window_log.pack()
+        #window_log = Label(mainFrame, text=unique_filename, font="10px")
+        #window_log.pack()
+        # self.prepare_log(projekt, "skonwertowano")
+        if projekt[40] == "\\":
+            log["skonwertowałem"].append(projekt[18:23]+"-"+projekt[41])
+        else:
+            log["skonwertowałem"].append(projekt[18:23] + "-" + projekt[40:41])
         with open('pdf/out_' + unique_filename + '.pdf', 'wb') as fout:
             merger.write(fout)
         for proces in procesy:
             proces.close()
+
+    # def prepare_log(self,projekt,status):
+    #     print(projekt[18:23])
+    #     test_arr = []
+    #     test_var = True
+    #     if projekt[40]=="\\":
+    #         log[status].append(projekt[18:23]+"-"+projekt[41])
+    #     else:
+    #         log[status].append(projekt[18:23] + "-" + projekt[40:41])
+
 
 class Reset:
     def main(self):
@@ -204,6 +228,7 @@ class Reset:
         os.mkdir("zip", mode=0o777)
         StatusChange().unpack()
         print("refreshed")
+        print(log)
 
 
 class StatusChange:
@@ -284,6 +309,17 @@ root.geometry('400x400')
 root.resizable(width=False, height=False)
 mainFrame = Frame(root)
 mainFrame.place(relx="0.15", rely="0.15", relwidth="0.7", relheight="0.7")
+#mainFrame.grid(row=0, column=0,columnspan=2 ,pady=40)
+#root.grid_columnconfigure(0, weight=1)
+#root.grid_columnconfigure(1, weight=1)
+#successFrame = Frame(root,background="green")
+#successFrame.grid(row=1, column=0, pady=40)
+#successLabel = Label(successFrame, text="Success", font="10px")
+#successLabel.pack(side="left")
+#failFrame = Frame(root,background="red")
+#failFrame.grid(row=1, column=1, pady=40, sticky=N)
+#failLabel = Label(successFrame, text="Fail", font="10px")
+#failLabel.pack(side="right")
 mainBtn = Button(mainFrame, text="Konwertuj SVG w PDF", command=lambda: threading.Thread(target=SVG2PDF().main).start())
 mainBtn.pack()
 seleniumBtn = Button(mainFrame, text="Pobierz zamówienia z filtru 'TO DO'",
